@@ -1,0 +1,89 @@
+﻿<Window x:Class="PCG_Dungeon.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Dungeon Generator"
+        Width="1132"
+        Height="578">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="960" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Canvas Name="canvDungeon"
+                Grid.Column="0"
+                Background="DarkGray"
+                Focusable="True"/>
+
+        <Grid Grid.Column="1">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+
+            <Label Grid.Row="0">
+                Number of Rooms:
+            </Label>
+            <TextBox Name="tbNumRooms"
+                     Grid.Row="0"
+                     Height="25"
+                     Margin="5, 10"
+                     VerticalAlignment="Bottom">
+                10
+            </TextBox>
+
+            <Label Grid.Row="1">
+                Min Room Size:
+            </Label>
+            <TextBox Name="tbMinRoomSize"
+                     Grid.Row="1"
+                     Height="25"
+                     Margin="5, 10"
+                     VerticalAlignment="Bottom">
+                5
+            </TextBox>
+
+            <Label Grid.Row="2">
+                Max Room Size:
+            </Label>
+            <TextBox Name="tbMaxRoomSize"
+                     Grid.Row="2"
+                     Height="25"
+                     Margin="5, 10"
+                     VerticalAlignment="Bottom">
+                25
+            </TextBox>
+
+            <Button Name="btnLoadDungeonFromFile"
+                    Grid.Row="6"
+                    Margin="5,10"
+                    Click="btnLoadDungeonFromFile_Click"
+                    Focusable="False">
+                Load Dungeon from File
+            </Button>
+
+            <Button Name="btnSaveDungeonToFile"
+                    Grid.Row="7"
+                    Margin="5,10"
+                    Click="btnSaveDungeonToFile_Click"
+                    Focusable="False">
+                Save Dungeon to File
+            </Button>
+
+            <Button Name="btnNewDungeon"
+                    Grid.Row="8"
+                    Margin="5,10"
+                    Click="btnNewDungeon_Click"
+                    Focusable="False">
+                New Dungeon
+            </Button>
+        </Grid>
+    </Grid>
+</Window>
