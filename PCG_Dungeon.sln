@@ -5,8 +5,6 @@ VisualStudioVersion = 12.0.40629.0
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PCG_Dungeon", "PCG_Dungeon\PCG_Dungeon.csproj", "{9A731BDD-BE25-40D2-A8C8-2C205D3D56B3}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{E361A8DF-76CA-4EDA-BA19-B047BAE5A6FA}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
