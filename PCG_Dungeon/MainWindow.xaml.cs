@@ -119,6 +119,11 @@ namespace PCG_Dungeon {
             canvDungeon.Children.Clear();
 
             dungeon.LoadFromFile();
+            
+            // Update the settings fields with the settings from the loaded dungeon state
+            tbNumRooms.Text = dungeon.NumRooms.ToString();
+            tbMinRoomSize.Text = dungeon.MinRoomSize.ToString();
+            tbMaxRoomSize.Text = dungeon.MaxRoomSize.ToString();
 
             DrawDungeon();
         }

@@ -19,16 +19,54 @@ namespace PCG_Dungeon {
 
         Random rand;
         Player player;
+        short[,] board;
+        List<Room> roomList;
 
-        // Class globals/consts that shouldn't be changed
         short DUNGEON_WIDTH,
               DUNGEON_HEIGHT,
               MIN_ROOM_SIZE,
               MAX_ROOM_SIZE,
               NUM_ROOMS;
 
-        short[,] board;
-        List<Room> roomList;
+        public int Width {
+            get {
+                return DUNGEON_WIDTH;
+            }
+
+            private set { }
+        }
+
+        public int Height {
+            get {
+                return DUNGEON_HEIGHT;
+            }
+
+            private set { }
+        }
+
+        public int MinRoomSize {
+            get {
+                return MIN_ROOM_SIZE;
+            }
+
+            private set { }
+        }
+
+        public int MaxRoomSize {
+            get {
+                return MAX_ROOM_SIZE;
+            }
+
+            private set { }
+        }
+
+        public int NumRooms {
+            get {
+                return roomList.Count();
+            }
+
+            private set { }
+        }
 
         /// <summary>
         ///     The Dungeon constructor takes the required parameters and
@@ -223,19 +261,18 @@ namespace PCG_Dungeon {
         }
 
         /// <summary>
-        ///     Attempts to move the Player% in a certain direction.
+        ///     Attempts to move the Player in a certain direction.
         /// </summary>
         /// <param name="x">
-        ///     The x coordinate of the potential new location.
+        ///     The amount to change the x coordinate of the player.
         /// </param>
         /// <param name="y">
-        ///     The y coordinate of the potential new location.
+        ///     The amount to change the y coordinate of the player.
         /// </param>
         /// <returns>
         ///     true = Successfully moved Player<br/>
         ///     false = Failed to move Player
         /// </returns>
-        // TODO: This should take a point instead of just x and y
         private bool movePlayer( int x, int y ) {
             short potentialMoveTile = board[player.x + x, player.y - y];
 
@@ -293,10 +330,22 @@ namespace PCG_Dungeon {
         }
 
         /// <summary>
-        ///     Saves the current Dungeon state out to a text file.
+        ///     Saves the current Dungeon state out to a set of text files.
         /// </summary>
         public void SaveToFile() {
-            using ( System.IO.StreamWriter file = new System.IO.StreamWriter( @"..\..\dungeon.txt" ) ) {
+            // Save the board settings
+            using ( System.IO.StreamWriter file = new System.IO.StreamWriter( @"..\..\saved_dungeonSettings.txt" ) ) {
+                file.Write( DUNGEON_WIDTH + "," +
+                            DUNGEON_HEIGHT + "," +
+                            MIN_ROOM_SIZE + "," +
+                            MAX_ROOM_SIZE + "," +
+                            NUM_ROOMS );
+
+                file.WriteLine();
+            }
+
+            // Save the board itself
+            using ( System.IO.StreamWriter file = new System.IO.StreamWriter( @"..\..\saved_dungeonBoard.txt" ) ) {
                 for ( int row = 0; row < DUNGEON_HEIGHT; row++ ) {
                     for ( int col = 0; col < DUNGEON_WIDTH; col++ ) {
                         file.Write( board[col, row] );
@@ -305,14 +354,38 @@ namespace PCG_Dungeon {
                     file.WriteLine();
                 }
             }
+
+            // Save the list of rooms
+            using ( System.IO.StreamWriter file = new System.IO.StreamWriter( @"..\..\saved_dungeonRooms.txt" ) ) {
+                foreach ( Room room in roomList ) {
+                    file.Write( room.x1 + "," + room.y1 + "," + room.w + "," + room.h );
+                    file.WriteLine();
+                }
+            }
         }
 
         /// <summary>
-        ///     Loads a Dungeon state from a text file.
+        ///     Loads a Dungeon state from a set of text files.
         /// </summary>
-        // TODO: Get this working
         public void LoadFromFile() {
-            using ( System.IO.StreamReader file = new System.IO.StreamReader( @"..\..\dungeon.txt" ) ) {
+            // Wipe the current state of the board
+            initializeBoard();
+            roomList.Clear();
+
+            // Load the Dungeon's settings
+            using ( System.IO.StreamReader file = new System.IO.StreamReader( @"..\..\saved_dungeonSettings.txt" ) ) {
+                string line = file.ReadLine();
+                string [] values = line.Split( ',' );
+
+                DUNGEON_WIDTH = short.Parse( values[0] );
+                DUNGEON_HEIGHT = short.Parse( values[1] );
+                MIN_ROOM_SIZE = short.Parse( values[2] );
+                MAX_ROOM_SIZE = short.Parse( values[3] );
+                NUM_ROOMS = short.Parse( values[4] );
+            }
+
+            // Load the Dungeon board
+            using ( System.IO.StreamReader file = new System.IO.StreamReader( @"..\..\saved_dungeonBoard.txt" ) ) {
                 char[] buffer = new char[1];
 
                 for ( int row = 0; row < DUNGEON_HEIGHT; row++ ) {
@@ -329,6 +402,23 @@ namespace PCG_Dungeon {
                     file.ReadLine();
                 }
             }
+
+            // Load the Dungeon roomList
+            using ( System.IO.StreamReader file = new System.IO.StreamReader( @"..\..\saved_dungeonRooms.txt" ) ) {
+                string line;
+                string [] values;
+
+                while ( !file.EndOfStream ) {
+                    line = file.ReadLine();
+                    values = line.Split( ',' );
+
+                    roomList.Add( new Room( short.Parse( values[0] ),
+                                            short.Parse( values[1] ),
+                                            short.Parse( values[2] ),
+                                            short.Parse( values[3] ) ) );
+                }
+            }
+
         }
 
         /// <summary>
