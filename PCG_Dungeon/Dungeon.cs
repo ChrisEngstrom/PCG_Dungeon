@@ -172,7 +172,7 @@ namespace PCG_Dungeon {
                             hCorridor( (int)prevCenter.x, (int)newCenter.x, (int)newCenter.y );
                         }
                     } else if ( roomList.Count == 1 ) {
-                        player = new Player( newRoom.center.x, newRoom.center.y );
+                        player = new Player( new Point( newRoom.center.x, newRoom.center.y ) );
                     }
                 }
             }
@@ -240,7 +240,7 @@ namespace PCG_Dungeon {
                 }
             }
 
-            board[player.x, player.y] = (short)TileState.PLAYER;
+            board[player.Position.x, player.Position.y] = (short)TileState.PLAYER;
         }
 
         /// <summary>
@@ -274,18 +274,18 @@ namespace PCG_Dungeon {
         ///     false = Failed to move Player
         /// </returns>
         private bool movePlayer( int x, int y ) {
-            short potentialMoveTile = board[player.x + x, player.y - y];
+            short potentialMoveTile = board[player.Position.x + x, player.Position.y - y];
 
             if ( potentialMoveTile != (short)TileState.WALL ) {
                 // Remove old player piece
-                board[player.x, player.y] = (short)TileState.OPEN;
+                board[player.Position.x, player.Position.y] = (short)TileState.OPEN;
 
                 // Update player piece
-                player.x += (short)x;
-                player.y -= (short)y;
+                player.Position.x += (short)x;
+                player.Position.y -= (short)y;
 
                 // Place updated player piece
-                board[player.x, player.y] = (short)TileState.PLAYER;
+                board[player.Position.x, player.Position.y] = (short)TileState.PLAYER;
 
                 return true;
             } else {
@@ -394,8 +394,8 @@ namespace PCG_Dungeon {
                         board[col, row] = short.Parse( buffer[0].ToString() );
 
                         if ( board[col, row] == (short)TileState.PLAYER ) {
-                            player.x = (short)col;
-                            player.y = (short)row;
+                            player.Position.x = (short)col;
+                            player.Position.y = (short)row;
                         }
                     }
 
@@ -418,7 +418,6 @@ namespace PCG_Dungeon {
                                             short.Parse( values[3] ) ) );
                 }
             }
-
         }
 
         /// <summary>
@@ -429,8 +428,8 @@ namespace PCG_Dungeon {
         ///     false = Dungeon has not been completed yet
         /// </returns>
         public bool CheckForLevelComplete() {
-            if ( player.x == roomList.Last().center.x &&
-                 player.y == roomList.Last().center.y ) {
+            if ( player.Position.x == roomList.Last().center.x &&
+                 player.Position.y == roomList.Last().center.y ) {
                 return true;
             }
 
