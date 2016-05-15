@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+/// \file Player.cs
 namespace PCG_Dungeon {
     class Player{
         public Point Position { get; set; }

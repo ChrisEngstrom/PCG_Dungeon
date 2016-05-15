@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+/// \file Dungeon.cs
 namespace PCG_Dungeon {
     /// <summary>
     ///     The Dungeon class represents the whole playable grid that includes
-    ///         all of the Room%s and Corridors as well as the Player.
+    ///         all of the Room%s and Hallway%s as well as the Player.
     /// </summary>
     class Dungeon {
         public enum TileState {
@@ -23,13 +24,27 @@ namespace PCG_Dungeon {
         short[,] board;
         List<Area> areaList;
 
+        public short RoomCoverage {
+            get {
+                short totalRoomArea = 0;
+
+                foreach ( Room room in areaList.OfType<Room>() ) {
+                    totalRoomArea += room.Area;
+                }
+
+                return (short)Math.Ceiling(totalRoomArea / (double)(Width * Height) * 100);
+            }
+
+            private set { }
+        }
+
         short DUNGEON_WIDTH,
               DUNGEON_HEIGHT,
               MIN_ROOM_SIZE,
               MAX_ROOM_SIZE,
-              NUM_ROOMS;
+              MAX_ROOM_COVERAGE;
 
-        public int Width {
+        public short Width {
             get {
                 return DUNGEON_WIDTH;
             }
@@ -37,7 +52,7 @@ namespace PCG_Dungeon {
             private set { }
         }
 
-        public int Height {
+        public short Height {
             get {
                 return DUNGEON_HEIGHT;
             }
@@ -45,7 +60,7 @@ namespace PCG_Dungeon {
             private set { }
         }
 
-        public int MinRoomSize {
+        public short MinRoomSize {
             get {
                 return MIN_ROOM_SIZE;
             }
@@ -53,7 +68,7 @@ namespace PCG_Dungeon {
             private set { }
         }
 
-        public int MaxRoomSize {
+        public short MaxRoomSize {
             get {
                 return MAX_ROOM_SIZE;
             }
@@ -61,9 +76,9 @@ namespace PCG_Dungeon {
             private set { }
         }
 
-        public int NumRooms {
+        public short MaxRoomCoverage {
             get {
-                return NUM_ROOMS;
+                return MAX_ROOM_COVERAGE;
             }
 
             private set { }
@@ -85,21 +100,22 @@ namespace PCG_Dungeon {
         /// <param name="maxRoomSize">
         ///     The maximum size for Room%s in the Dungeon.
         /// </param>
-        /// <param name="numRooms">
+        /// <param name="maxRoomCoverage">
         ///     The number of Room%s to attempt to place in the Dungeon.
         /// </param>
-        public Dungeon( short width, short height, short minRoomSize, short maxRoomSize, short numRooms ) {
+        public Dungeon( short width, short height, short minRoomSize, short maxRoomSize, short maxRoomCoverage ) {
             DUNGEON_WIDTH = width;
             DUNGEON_HEIGHT = height;
             MIN_ROOM_SIZE = minRoomSize;
             MAX_ROOM_SIZE = maxRoomSize;
-            NUM_ROOMS = numRooms;
+            MAX_ROOM_COVERAGE = maxRoomCoverage;
 
             rand = new Random();
             board = new short[DUNGEON_WIDTH, DUNGEON_HEIGHT];
             areaList = new List<Area>();
 
             initializeBoard();
+            PlaceRooms( false );
         }
 
         /// <summary>
@@ -138,7 +154,8 @@ namespace PCG_Dungeon {
 
             initializeBoard();
 
-            while ( (areaList.Count - (NUM_ROOMS - 1) * 2) < NUM_ROOMS ) {
+            /// \todo Figure out why RoomCoverage higher than MAX_ROOM_COVERAGE is still a thing
+            while ( RoomCoverage < MAX_ROOM_COVERAGE ) {
                 short w = (short)rand.Next( MIN_ROOM_SIZE, MAX_ROOM_SIZE + 1 ),
                       h = (short)rand.Next( MIN_ROOM_SIZE, MAX_ROOM_SIZE + 1 ),
                       x = (short)(rand.Next( (DUNGEON_WIDTH - w + 1 - 2) ) + 1),    // The (- 2) and (+ 1) keeps the rooms
@@ -147,39 +164,43 @@ namespace PCG_Dungeon {
 
                 Room newRoom = new Room( x, y, w, h );
 
-                foreach ( Room existingRoom in areaList.OfType<Room>() ) {
-                    if ( newRoom.Intersects( existingRoom ) ) {
-                        intersection = true;
-                        break;
-                    }
-                }
+                short newRoomCoverage = (short)(((RoomCoverage / 100) * (Width * Height) + newRoom.Area) / (double)(Width * Height) * 100);
 
-                if ( !intersection ) {
-                    areaList.Add( newRoom );
-
-                    // Save the center point of this new room
-                    Point newCenter = new Point( newRoom.center.x, newRoom.center.y );
-
-                    if ( areaList.Count > 1 ) {
-                        HorizontalHallway hHall = null;
-                        VerticalHallway vHall = null;
-
-                        Point prevCenter = new Point( areaList[areaList.Count - 2].center.x,
-                                                      areaList[areaList.Count - 2].center.y );
-
-                        // Randomly choose which hall type to do first
-                        if ( rand.Next( 2 ) == 1 ) {
-                            hHall = new HorizontalHallway( Math.Min( prevCenter.x, newCenter.x ), prevCenter.y, (short)(Math.Abs( prevCenter.x - newCenter.x ) + 1) );
-                            vHall = new VerticalHallway( newCenter.x, Math.Min( prevCenter.y, newCenter.y ), (short)(Math.Abs( prevCenter.y - newCenter.y ) + 1) );
-                        } else {
-                            vHall = new VerticalHallway( prevCenter.x, Math.Min( prevCenter.y, newCenter.y ), (short)(Math.Abs( prevCenter.y - newCenter.y ) + 1) );
-                            hHall = new HorizontalHallway( Math.Min( prevCenter.x, newCenter.x ), newCenter.y, (short)(Math.Abs( prevCenter.x - newCenter.x ) + 1) );
+                if ( newRoomCoverage < MAX_ROOM_COVERAGE ) {
+                    foreach ( Room existingRoom in areaList.OfType<Room>() ) {
+                        if ( newRoom.Intersects( existingRoom ) ) {
+                            intersection = true;
+                            break;
                         }
+                    }
 
-                        areaList.Insert( areaList.Count - 1, hHall );
-                        areaList.Insert( areaList.Count - 1, vHall );
-                    } else if ( areaList.Count == 1 ) {
-                        player = new Player( new Point( newRoom.center.x, newRoom.center.y ) );
+                    if ( !intersection ) {
+                        areaList.Add( newRoom );
+
+                        // Save the center point of this new room
+                        Point newCenter = new Point( newRoom.center.x, newRoom.center.y );
+
+                        if ( areaList.Count > 1 ) {
+                            VerticalHallway vHall = null;
+                            HorizontalHallway hHall = null;
+
+                            Point prevCenter = new Point( areaList[areaList.Count - 2].center.x,
+                                                          areaList[areaList.Count - 2].center.y );
+
+                            // Randomly choose which hall type to do first
+                            if ( rand.Next( 2 ) == 1 ) {
+                                hHall = new HorizontalHallway( Math.Min( prevCenter.x, newCenter.x ), prevCenter.y, (short)(Math.Abs( prevCenter.x - newCenter.x ) + 1) );
+                                vHall = new VerticalHallway( newCenter.x, Math.Min( prevCenter.y, newCenter.y ), (short)(Math.Abs( prevCenter.y - newCenter.y ) + 1) );
+                            } else {
+                                vHall = new VerticalHallway( prevCenter.x, Math.Min( prevCenter.y, newCenter.y ), (short)(Math.Abs( prevCenter.y - newCenter.y ) + 1) );
+                                hHall = new HorizontalHallway( Math.Min( prevCenter.x, newCenter.x ), newCenter.y, (short)(Math.Abs( prevCenter.x - newCenter.x ) + 1) );
+                            }
+
+                            areaList.Insert( areaList.Count - 1, hHall );
+                            areaList.Insert( areaList.Count - 1, vHall );
+                        } else if ( areaList.Count == 1 ) {
+                            player = new Player( new Point( newRoom.center.x, newRoom.center.y ) );
+                        }
                     }
                 }
             }
@@ -317,7 +338,7 @@ namespace PCG_Dungeon {
                             DUNGEON_HEIGHT + "," +
                             MIN_ROOM_SIZE + "," +
                             MAX_ROOM_SIZE + "," +
-                            NUM_ROOMS );
+                            MAX_ROOM_COVERAGE );
 
                 file.WriteLine();
             }
@@ -346,7 +367,7 @@ namespace PCG_Dungeon {
         ///     Loads a Dungeon state from a set of text files.
         /// </summary>
         public void LoadFromFile() {
-            // \todo Add a check to make sure a set of save files exist
+            /// \todo Add a check to make sure a set of save files exist
 
             // Wipe the current state of the board
             initializeBoard();
@@ -361,7 +382,7 @@ namespace PCG_Dungeon {
                 DUNGEON_HEIGHT = short.Parse( values[1] );
                 MIN_ROOM_SIZE = short.Parse( values[2] );
                 MAX_ROOM_SIZE = short.Parse( values[3] );
-                NUM_ROOMS = short.Parse( values[4] );
+                MAX_ROOM_COVERAGE = short.Parse( values[4] );
             }
 
             // Load the Dungeon board

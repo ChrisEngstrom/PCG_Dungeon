@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+/// \file HorizontalHallway.cs
 namespace PCG_Dungeon {
     /// <summary>
     ///     The HorizontalHallway class is a Hallway with a height of one unit

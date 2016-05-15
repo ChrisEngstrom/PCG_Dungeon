@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+/// \file Area.cs
 namespace PCG_Dungeon {
     class Area {
         // Grid coordinates for the corners of the area

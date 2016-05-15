@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+/// \file VerticalHallway.cs
 namespace PCG_Dungeon {
     /// <summary>
     ///     The VerticalHallway class is a Hallway with a width of one unit

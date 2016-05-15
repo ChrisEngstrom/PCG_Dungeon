@@ -12,6 +12,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 
+/// \file MainWindow.xaml.cs
 namespace PCG_Dungeon {
     /// <summary>
     /// Interaction logic for Window1.xaml
@@ -28,14 +29,16 @@ namespace PCG_Dungeon {
             this.Loaded += new RoutedEventHandler( MainWindow_Loaded );
             this.KeyDown += new KeyEventHandler( MainWindow_KeyDown );
 
-            dungeon = new Dungeon( WIDTH, HEIGHT,
+            dungeon = new Dungeon( WIDTH,
+                                   HEIGHT,
                                    short.Parse( tbMinRoomSize.Text ),
                                    short.Parse( tbMaxRoomSize.Text ),
-                                   short.Parse( tbNumRooms.Text ) );
+                                   (short)iudMaxRoomCoverage.Value );
         }
 
         void MainWindow_Loaded( object sender, RoutedEventArgs e ) {
             btnNewDungeon_Click( this, new RoutedEventArgs() );
+            lblRoomCoverage.Content = dungeon.RoomCoverage + " %";
         }
 
         void MainWindow_KeyDown( object sender, KeyEventArgs e ) {
@@ -104,13 +107,15 @@ namespace PCG_Dungeon {
 
         private void btnNewDungeon_Click( object sender, RoutedEventArgs e ) {
             canvDungeon.Children.Clear();
-            dungeon = new Dungeon( WIDTH, HEIGHT,
+            dungeon = new Dungeon( WIDTH,
+                                   HEIGHT,
                                    short.Parse( tbMinRoomSize.Text ),
                                    short.Parse( tbMaxRoomSize.Text ),
-                                   short.Parse( tbNumRooms.Text ) );
-            dungeon.PlaceRooms( false );
-            DrawDungeon();
+                                   (short)iudMaxRoomCoverage.Value );
 
+            lblRoomCoverage.Content = dungeon.RoomCoverage + " %";
+
+            DrawDungeon();
         }
 
         private void btnSaveDungeonToFile_Click( object sender, RoutedEventArgs e ) {
@@ -123,9 +128,10 @@ namespace PCG_Dungeon {
             dungeon.LoadFromFile();
             
             // Update the settings fields with the settings from the loaded dungeon state
-            tbNumRooms.Text = dungeon.NumRooms.ToString();
+            iudMaxRoomCoverage.Value = dungeon.MaxRoomCoverage;
             tbMinRoomSize.Text = dungeon.MinRoomSize.ToString();
             tbMaxRoomSize.Text = dungeon.MaxRoomSize.ToString();
+            lblRoomCoverage.Content = dungeon.RoomCoverage + " %";
 
             DrawDungeon();
         }
