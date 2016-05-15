@@ -12,7 +12,7 @@
 
         <Canvas Name="canvDungeon"
                 Grid.Column="0"
-                Background="DarkGray"
+                Background="DimGray"
                 Focusable="True"/>
 
         <Grid Grid.Column="1">

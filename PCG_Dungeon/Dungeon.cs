@@ -10,17 +10,18 @@ namespace PCG_Dungeon {
     /// </summary>
     class Dungeon {
         public enum TileState {
-            OPEN = 0,
+            ROOM = 0,
             WALL = 1,
-            PLAYER = 2,
-            START = 3,
-            END = 4,
+            HALL = 2,
+            PLAYER = 3,
+            START = 4,
+            END = 5,
         }
 
         Random rand;
         Player player;
         short[,] board;
-        List<Room> roomList;
+        List<Area> areaList;
 
         short DUNGEON_WIDTH,
               DUNGEON_HEIGHT,
@@ -62,7 +63,7 @@ namespace PCG_Dungeon {
 
         public int NumRooms {
             get {
-                return roomList.Count();
+                return NUM_ROOMS;
             }
 
             private set { }
@@ -96,7 +97,7 @@ namespace PCG_Dungeon {
 
             rand = new Random();
             board = new short[DUNGEON_WIDTH, DUNGEON_HEIGHT];
-            roomList = new List<Room>();
+            areaList = new List<Area>();
 
             initializeBoard();
         }
@@ -124,20 +125,20 @@ namespace PCG_Dungeon {
         public void PlaceRooms( bool endRoomIsNewStartRoom ) {
             Room startRoom = null;
 
-            if ( roomList.Count > 0 &&
+            if ( areaList.Count > 0 &&
                  endRoomIsNewStartRoom ) {
-                startRoom = roomList.Last();
+                startRoom = (Room)areaList.Last();
 
-                roomList.Clear();
+                areaList.Clear();
 
-                roomList.Add( startRoom );
+                areaList.Add( startRoom );
             } else {
-                roomList.Clear();
+                areaList.Clear();
             }
 
             initializeBoard();
 
-            while ( roomList.Count < NUM_ROOMS ) {
+            while ( (areaList.Count - (NUM_ROOMS - 1) * 2) < NUM_ROOMS ) {
                 short w = (short)rand.Next( MIN_ROOM_SIZE, MAX_ROOM_SIZE + 1 ),
                       h = (short)rand.Next( MIN_ROOM_SIZE, MAX_ROOM_SIZE + 1 ),
                       x = (short)(rand.Next( (DUNGEON_WIDTH - w + 1 - 2) ) + 1),    // The (- 2) and (+ 1) keeps the rooms
@@ -146,7 +147,7 @@ namespace PCG_Dungeon {
 
                 Room newRoom = new Room( x, y, w, h );
 
-                foreach ( Room existingRoom in roomList ) {
+                foreach ( Room existingRoom in areaList.OfType<Room>() ) {
                     if ( newRoom.Intersects( existingRoom ) ) {
                         intersection = true;
                         break;
@@ -154,24 +155,30 @@ namespace PCG_Dungeon {
                 }
 
                 if ( !intersection ) {
-                    roomList.Add( newRoom );
+                    areaList.Add( newRoom );
 
                     // Save the center point of this new room
                     Point newCenter = new Point( newRoom.center.x, newRoom.center.y );
 
-                    if ( roomList.Count > 1 ) {
-                        Point prevCenter = new Point( roomList[roomList.Count - 2].center.x,
-                                                      roomList[roomList.Count - 2].center.y );
+                    if ( areaList.Count > 1 ) {
+                        HorizontalHallway hHall = null;
+                        VerticalHallway vHall = null;
 
-                        // Randomly choose to either do the hCorridor first or the vCorridor first
+                        Point prevCenter = new Point( areaList[areaList.Count - 2].center.x,
+                                                      areaList[areaList.Count - 2].center.y );
+
+                        // Randomly choose which hall type to do first
                         if ( rand.Next( 2 ) == 1 ) {
-                            hCorridor( (int)prevCenter.x, (int)newCenter.x, (int)prevCenter.y );
-                            vCorridor( (int)prevCenter.y, (int)newCenter.y, (int)newCenter.x );
+                            hHall = new HorizontalHallway( Math.Min( prevCenter.x, newCenter.x ), prevCenter.y, (short)(Math.Abs( prevCenter.x - newCenter.x ) + 1) );
+                            vHall = new VerticalHallway( newCenter.x, Math.Min( prevCenter.y, newCenter.y ), (short)(Math.Abs( prevCenter.y - newCenter.y ) + 1) );
                         } else {
-                            vCorridor( (int)prevCenter.y, (int)newCenter.y, (int)prevCenter.x );
-                            hCorridor( (int)prevCenter.x, (int)newCenter.x, (int)newCenter.y );
+                            vHall = new VerticalHallway( prevCenter.x, Math.Min( prevCenter.y, newCenter.y ), (short)(Math.Abs( prevCenter.y - newCenter.y ) + 1) );
+                            hHall = new HorizontalHallway( Math.Min( prevCenter.x, newCenter.x ), newCenter.y, (short)(Math.Abs( prevCenter.x - newCenter.x ) + 1) );
                         }
-                    } else if ( roomList.Count == 1 ) {
+
+                        areaList.Insert( areaList.Count - 1, hHall );
+                        areaList.Insert( areaList.Count - 1, vHall );
+                    } else if ( areaList.Count == 1 ) {
                         player = new Player( new Point( newRoom.center.x, newRoom.center.y ) );
                     }
                 }
@@ -181,60 +188,31 @@ namespace PCG_Dungeon {
         }
 
         /// <summary>
-        ///     Creates a horizontal corridor from x1 to x2 using the
-        ///         horizontal coordinate y.
-        /// </summary>
-        /// <param name="x1">
-        ///     The x coordinate for the center of the first Room.
-        /// </param>
-        /// <param name="x2">
-        ///     The x coordinate for the center of the second Room.
-        /// </param>
-        /// <param name="y">
-        ///     The y coordinate that the corridor will run along.
-        /// </param>
-        private void hCorridor( int x1, int x2, int y ) {
-            for ( int col = Math.Min( x1, x2 ); col < Math.Max( x1, x2 ) + 1; col++ ) {
-                // Remove the wall present
-                board[col, y] = (short)TileState.OPEN;
-            }
-        }
-
-        /// <summary>
-        ///     Creates a vertical corridor from y1 to y2 using the vertical
-        ///         coordinate x.
-        /// </summary>
-        /// <param name="y1">
-        ///     The y coordinate for the center of the first Room.
-        /// </param>
-        /// <param name="y2">
-        ///     The y coordinate for the center of the second Room.
-        /// </param>
-        /// <param name="x">
-        ///     The x coordinate that the corridor will run along.
-        /// </param>
-        private void vCorridor( int y1, int y2, int x ) {
-            for ( int row = Math.Min( y1, y2 ); row < Math.Max( y1, y2 ) + 1; row++ ) {
-                // Remove the wall present
-                board[x, row] = (short)TileState.OPEN;
-            }
-        }
-
-        /// <summary>
-        ///     Goes through the Room%s that have been added to the Dungeon and
+        ///     Goes through the Area%s that have been added to the Dungeon and
         ///         sets the appropriate tiles to the correct state. Also sets
         ///         the tile state for the Player%'s location
         /// </summary>
         private void updateBoard() {
-            foreach ( Room room in roomList ) {
+            // Draw the hallways
+            foreach ( Hallway hallway in areaList.OfType<Hallway>() ) {
+                for ( int col = hallway.x1; col < hallway.x2; col++ ) {
+                    for ( int row = hallway.y1; row < hallway.y2; row++ ) {
+                        // Use the hall TileState
+                        board[col, row] = (short)TileState.HALL;
+                    }
+                }
+            }
+
+            // Draw the rooms
+            foreach ( Room room in areaList.OfType<Room>() ) {
                 for ( int col = room.x1; col < room.x2; col++ ) {
                     for ( int row = room.y1; row < room.y2; row++ ) {
-                        if ( room == roomList.First() ) {
+                        if ( room == areaList.First() ) {
                             board[col, row] = (short)TileState.START;
-                        } else if ( room == roomList.Last() ) {
+                        } else if ( room == areaList.Last() ) {
                             board[col, row] = (short)TileState.END;
                         } else {
-                            board[col, row] = (short)TileState.OPEN;
+                            board[col, row] = (short)TileState.ROOM;
                         }
                     }
                 }
@@ -278,7 +256,7 @@ namespace PCG_Dungeon {
 
             if ( potentialMoveTile != (short)TileState.WALL ) {
                 // Remove old player piece
-                board[player.Position.x, player.Position.y] = (short)TileState.OPEN;
+                //board[player.Position.x, player.Position.y] = (short)TileState.ROOM;
 
                 // Update player piece
                 player.Position.x += (short)x;
@@ -357,8 +335,8 @@ namespace PCG_Dungeon {
 
             // Save the list of rooms
             using ( System.IO.StreamWriter file = new System.IO.StreamWriter( @"..\..\saved_dungeonRooms.txt" ) ) {
-                foreach ( Room room in roomList ) {
-                    file.Write( room.x1 + "," + room.y1 + "," + room.w + "," + room.h );
+                foreach ( Area area in areaList ) {
+                    file.Write( area.x1 + "," + area.y1 + "," + area.w + "," + area.h );
                     file.WriteLine();
                 }
             }
@@ -368,9 +346,11 @@ namespace PCG_Dungeon {
         ///     Loads a Dungeon state from a set of text files.
         /// </summary>
         public void LoadFromFile() {
+            // \todo Add a check to make sure a set of save files exist
+
             // Wipe the current state of the board
             initializeBoard();
-            roomList.Clear();
+            areaList.Clear();
 
             // Load the Dungeon's settings
             using ( System.IO.StreamReader file = new System.IO.StreamReader( @"..\..\saved_dungeonSettings.txt" ) ) {
@@ -407,15 +387,25 @@ namespace PCG_Dungeon {
             using ( System.IO.StreamReader file = new System.IO.StreamReader( @"..\..\saved_dungeonRooms.txt" ) ) {
                 string line;
                 string [] values;
+                int lineNum = 0;
 
                 while ( !file.EndOfStream ) {
                     line = file.ReadLine();
                     values = line.Split( ',' );
 
-                    roomList.Add( new Room( short.Parse( values[0] ),
-                                            short.Parse( values[1] ),
-                                            short.Parse( values[2] ),
-                                            short.Parse( values[3] ) ) );
+                    if ( lineNum % 3 == 0 ) {
+                        areaList.Add( new Room( short.Parse( values[0] ),
+                                                short.Parse( values[1] ),
+                                                short.Parse( values[2] ),
+                                                short.Parse( values[3] ) ) );
+                    } else {
+                        areaList.Add( new Hallway( short.Parse( values[0] ),
+                                                   short.Parse( values[1] ),
+                                                   short.Parse( values[2] ),
+                                                   short.Parse( values[3] ) ) );
+                    }
+
+                    lineNum++;
                 }
             }
         }
@@ -428,8 +418,8 @@ namespace PCG_Dungeon {
         ///     false = Dungeon has not been completed yet
         /// </returns>
         public bool CheckForLevelComplete() {
-            if ( player.Position.x == roomList.Last().center.x &&
-                 player.Position.y == roomList.Last().center.y ) {
+            if ( player.Position.x == areaList.Last().center.x &&
+                 player.Position.y == areaList.Last().center.y ) {
                 return true;
             }
 

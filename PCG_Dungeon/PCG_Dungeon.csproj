@@ -56,9 +56,13 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Area.cs" />
     <Compile Include="Dungeon.cs" />
+    <Compile Include="Hallway.cs" />
+    <Compile Include="HorizontalHallway.cs" />
     <Compile Include="Player.cs" />
     <Compile Include="Room.cs" />
+    <Compile Include="VerticalHallway.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>

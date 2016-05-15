@@ -75,8 +75,10 @@ namespace PCG_Dungeon {
                     if ( dungeon.GetPosition( col, row ) != (int)Dungeon.TileState.WALL ) {
                         Rectangle rect = new Rectangle();
 
-                        if ( dungeon.GetPosition( col, row ) == (int)Dungeon.TileState.OPEN ) {
-                            rect.Fill = new SolidColorBrush( Colors.LightGray );
+                        if ( dungeon.GetPosition( col, row ) == (int)Dungeon.TileState.ROOM ) {
+                            rect.Fill = new SolidColorBrush( Colors.LightSlateGray );
+                        } else if ( dungeon.GetPosition( col, row ) == (int)Dungeon.TileState.HALL ) {
+                            rect.Fill = new SolidColorBrush( Colors.DarkGray );
                         } else if ( dungeon.GetPosition( col, row ) == (int)Dungeon.TileState.START ) {
                             rect.Fill = new SolidColorBrush( Colors.LightGreen );
                         } else if ( dungeon.GetPosition( col, row ) == (int)Dungeon.TileState.END ) {
