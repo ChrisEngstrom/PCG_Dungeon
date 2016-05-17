@@ -11,12 +11,13 @@ namespace PCG_Dungeon {
     /// </summary>
     class Dungeon {
         public enum TileState {
-            ROOM = 0,
-            WALL = 1,
-            HALL = 2,
-            PLAYER = 3,
-            START = 4,
-            END = 5,
+            EMPTY = 0,
+            ROOM = 1,
+            START = 2,
+            END = 3,
+            HALL = 4,
+            WALL = 5,
+            PLAYER = 6,
         }
 
         Random rand;
@@ -125,7 +126,7 @@ namespace PCG_Dungeon {
         private void initializeBoard() {
             for ( int col = 0; col < DUNGEON_WIDTH; col++ ) {
                 for ( int row = 0; row < DUNGEON_HEIGHT; row++ ) {
-                    board[col, row] = (short)TileState.WALL;
+                    board[col, row] = (short)TileState.EMPTY;
                 }
             }
         }
@@ -214,7 +215,7 @@ namespace PCG_Dungeon {
         ///         the tile state for the Player%'s location
         /// </summary>
         private void updateBoard() {
-            // Draw the hallways
+            // Add the Hallways first to make sure the rooms are on top
             foreach ( Hallway hallway in areaList.OfType<Hallway>() ) {
                 for ( int col = hallway.x1; col < hallway.x2; col++ ) {
                     for ( int row = hallway.y1; row < hallway.y2; row++ ) {
@@ -224,7 +225,7 @@ namespace PCG_Dungeon {
                 }
             }
 
-            // Draw the rooms
+            // Add the Rooms
             foreach ( Room room in areaList.OfType<Room>() ) {
                 for ( int col = room.x1; col < room.x2; col++ ) {
                     for ( int row = room.y1; row < room.y2; row++ ) {
@@ -239,6 +240,23 @@ namespace PCG_Dungeon {
                 }
             }
 
+            // Add the walls around the perimeter of the Hallways and Rooms
+            foreach ( Area area in areaList ) {
+                Area wallArea = new Area( (short)(area.x1 - 1),
+                                          (short)(area.y1 - 1),
+                                          (short)(area.w + 2),
+                                          (short)(area.h + 2) );
+
+                for ( int col = wallArea.x1; col < wallArea.x2; col++ ) {
+                    for ( int row = wallArea.y1; row < wallArea.y2; row++ ) {
+                        if ( board[col, row] == (short)TileState.EMPTY ) {
+                            board[col, row] = (short)TileState.WALL;
+                        }
+                    }
+                }
+            }
+
+            // Place the player on the board
             board[player.Position.x, player.Position.y] = (short)TileState.PLAYER;
         }
 
@@ -276,15 +294,9 @@ namespace PCG_Dungeon {
             short potentialMoveTile = board[player.Position.x + x, player.Position.y - y];
 
             if ( potentialMoveTile != (short)TileState.WALL ) {
-                // Remove old player piece
-                //board[player.Position.x, player.Position.y] = (short)TileState.ROOM;
-
                 // Update player piece
                 player.Position.x += (short)x;
                 player.Position.y -= (short)y;
-
-                // Place updated player piece
-                board[player.Position.x, player.Position.y] = (short)TileState.PLAYER;
 
                 return true;
             } else {
