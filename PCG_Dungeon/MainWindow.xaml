@@ -14,7 +14,9 @@
         <Canvas Name="canvDungeon"
                 Grid.Column="0"
                 Background="DimGray"
-                Focusable="True"/>
+                Focusable="True"
+                Height="540"
+                Width="960"/>
 
         <Grid Grid.Column="1">
             <Grid.RowDefinitions>
