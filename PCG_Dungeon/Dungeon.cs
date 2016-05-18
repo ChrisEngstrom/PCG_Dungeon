@@ -10,16 +10,6 @@ namespace PCG_Dungeon {
     ///         all of the Room%s and Hallway%s as well as the Player.
     /// </summary>
     class Dungeon {
-        public enum TileState {
-            EMPTY = 0,
-            ROOM = 1,
-            START = 2,
-            END = 3,
-            HALL = 4,
-            WALL = 5,
-            PLAYER = 6,
-        }
-
         Random rand;
         Player player;
         short[,] board;
