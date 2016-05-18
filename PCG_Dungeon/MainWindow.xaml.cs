@@ -75,20 +75,20 @@ namespace PCG_Dungeon {
         void DrawDungeon() {
             for ( int col = 0; col < WIDTH; col++ ) {
                 for ( int row = 0; row < HEIGHT; row++ ) {
-                    if ( dungeon.GetPosition( col, row ) != (int)TileState.EMPTY ) {
+                    if ( dungeon.GetPosition( col, row ).TileState != TileState.EMPTY ) {
                         Rectangle rect = new Rectangle();
 
-                        if ( dungeon.GetPosition( col, row ) == (int)TileState.ROOM ) {
+                        if ( dungeon.GetPosition( col, row ).TileState == TileState.ROOM ) {
                             rect.Fill = new SolidColorBrush( Colors.LightSlateGray );
-                        } else if ( dungeon.GetPosition( col, row ) == (int)TileState.START ) {
+                        } else if ( dungeon.GetPosition( col, row ).TileState == TileState.START ) {
                             rect.Fill = new SolidColorBrush( Colors.LightGreen );
-                        } else if ( dungeon.GetPosition( col, row ) == (int)TileState.END ) {
+                        } else if ( dungeon.GetPosition( col, row ).TileState == TileState.END ) {
                             rect.Fill = new SolidColorBrush( Colors.LightCoral );
-                        } else if ( dungeon.GetPosition( col, row ) == (int)TileState.HALL ) {
+                        } else if ( dungeon.GetPosition( col, row ).TileState == TileState.HALL ) {
                             rect.Fill = new SolidColorBrush( Colors.DarkGray );
-                        } else if ( dungeon.GetPosition( col, row ) == (int)TileState.WALL ) {
+                        } else if ( dungeon.GetPosition( col, row ).TileState == TileState.WALL ) {
                             rect.Fill = new SolidColorBrush( Colors.DarkSlateGray );
-                        } else if ( dungeon.GetPosition( col, row ) == (int)TileState.PLAYER ) {
+                        } else if ( dungeon.GetPosition( col, row ).TileState == TileState.PLAYER ) {
                             rect.Fill = new SolidColorBrush( Colors.LightSeaGreen );
                         }
                         //else {

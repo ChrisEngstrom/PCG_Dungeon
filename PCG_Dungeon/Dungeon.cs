@@ -12,7 +12,7 @@ namespace PCG_Dungeon {
     class Dungeon {
         Random rand;
         Player player;
-        short[,] board;
+        Tile[,] board;
         List<Area> areaList;
 
         public short RoomCoverage {
@@ -102,7 +102,7 @@ namespace PCG_Dungeon {
             MAX_ROOM_COVERAGE = maxRoomCoverage;
 
             rand = new Random();
-            board = new short[DUNGEON_WIDTH, DUNGEON_HEIGHT];
+            board = new Tile[DUNGEON_WIDTH, DUNGEON_HEIGHT];
             areaList = new List<Area>();
 
             initializeBoard();
@@ -114,9 +114,9 @@ namespace PCG_Dungeon {
         ///         state.
         /// </summary>
         private void initializeBoard() {
-            for ( int col = 0; col < DUNGEON_WIDTH; col++ ) {
-                for ( int row = 0; row < DUNGEON_HEIGHT; row++ ) {
-                    board[col, row] = (short)TileState.EMPTY;
+            for ( int row = 0; row < DUNGEON_HEIGHT; row++ ) {
+                for ( int col = 0; col < DUNGEON_WIDTH; col++ ) {
+                    board[col, row] = new Tile();
                 }
             }
         }
@@ -207,24 +207,24 @@ namespace PCG_Dungeon {
         private void updateBoard() {
             // Add the Hallways first to make sure the rooms are on top
             foreach ( Hallway hallway in areaList.OfType<Hallway>() ) {
-                for ( int col = hallway.x1; col < hallway.x2; col++ ) {
-                    for ( int row = hallway.y1; row < hallway.y2; row++ ) {
+                for ( int row = hallway.y1; row < hallway.y2; row++ ) {
+                    for ( int col = hallway.x1; col < hallway.x2; col++ ) {
                         // Use the hall TileState
-                        board[col, row] = (short)TileState.HALL;
+                        board[col, row].TileState = TileState.HALL;
                     }
                 }
             }
 
             // Add the Rooms
             foreach ( Room room in areaList.OfType<Room>() ) {
-                for ( int col = room.x1; col < room.x2; col++ ) {
-                    for ( int row = room.y1; row < room.y2; row++ ) {
+                for ( int row = room.y1; row < room.y2; row++ ) {
+                    for ( int col = room.x1; col < room.x2; col++ ) {
                         if ( room == areaList.First() ) {
-                            board[col, row] = (short)TileState.START;
+                            board[col, row].TileState = TileState.START;
                         } else if ( room == areaList.Last() ) {
-                            board[col, row] = (short)TileState.END;
+                            board[col, row].TileState = TileState.END;
                         } else {
-                            board[col, row] = (short)TileState.ROOM;
+                            board[col, row].TileState = TileState.ROOM;
                         }
                     }
                 }
@@ -237,17 +237,17 @@ namespace PCG_Dungeon {
                                           (short)(area.w + 2),
                                           (short)(area.h + 2) );
 
-                for ( int col = wallArea.x1; col < wallArea.x2; col++ ) {
-                    for ( int row = wallArea.y1; row < wallArea.y2; row++ ) {
-                        if ( board[col, row] == (short)TileState.EMPTY ) {
-                            board[col, row] = (short)TileState.WALL;
+                for ( int row = wallArea.y1; row < wallArea.y2; row++ ) {
+                    for ( int col = wallArea.x1; col < wallArea.x2; col++ ) {
+                        if ( board[col, row].TileState == TileState.EMPTY ) {
+                            board[col, row].TileState = TileState.WALL;
                         }
                     }
                 }
             }
 
             // Place the player on the board
-            board[player.Position.x, player.Position.y] = (short)TileState.PLAYER;
+            board[player.Position.x, player.Position.y].TileState = TileState.PLAYER;
         }
 
         /// <summary>
@@ -263,7 +263,7 @@ namespace PCG_Dungeon {
         ///     The numerical value that is associated with the corresponding
         ///         TileState.
         /// </returns>
-        public int GetPosition( int col, int row ) {
+        public Tile GetPosition( int col, int row ) {
             return board[col, row];
         }
 
@@ -281,9 +281,9 @@ namespace PCG_Dungeon {
         ///     false = Failed to move Player
         /// </returns>
         private bool movePlayer( int x, int y ) {
-            short potentialMoveTile = board[player.Position.x + x, player.Position.y - y];
+            Tile potentialMoveTile = board[player.Position.x + x, player.Position.y - y];
 
-            if ( potentialMoveTile != (short)TileState.WALL ) {
+            if ( potentialMoveTile.TileState != TileState.WALL ) {
                 // Update player piece
                 player.Position.x += (short)x;
                 player.Position.y -= (short)y;
@@ -347,13 +347,7 @@ namespace PCG_Dungeon {
 
             // Save the board itself
             using ( System.IO.StreamWriter file = new System.IO.StreamWriter( @"..\..\saved_dungeonBoard.txt" ) ) {
-                for ( int row = 0; row < DUNGEON_HEIGHT; row++ ) {
-                    for ( int col = 0; col < DUNGEON_WIDTH; col++ ) {
-                        file.Write( board[col, row] );
-                    }
-
-                    file.WriteLine();
-                }
+                file.Write( this.ToString() );
             }
 
             // Save the list of rooms
@@ -394,9 +388,9 @@ namespace PCG_Dungeon {
                 for ( int row = 0; row < DUNGEON_HEIGHT; row++ ) {
                     for ( int col = 0; col < DUNGEON_WIDTH; col++ ) {
                         file.Read( buffer, 0, 1 );
-                        board[col, row] = short.Parse( buffer[0].ToString() );
+                        board[col, row].TileState = (TileState)Enum.Parse( typeof( TileState ), buffer[0].ToString() );
 
-                        if ( board[col, row] == (short)TileState.PLAYER ) {
+                        if ( board[col, row].TileState == TileState.PLAYER ) {
                             player.Position.x = (short)col;
                             player.Position.y = (short)row;
                         }

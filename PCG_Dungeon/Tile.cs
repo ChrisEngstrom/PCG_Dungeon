@@ -20,7 +20,7 @@ namespace PCG_Dungeon {
     ///     The Tile class represents a location on the Dungeon board
     /// </summary>
     class Tile {
-        TileState TileState { get; set; }
+        public TileState TileState { get; set; }
 
         /// <summary>
         ///     The default constructor sets the TileState to EMPTY
