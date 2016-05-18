@@ -448,5 +448,19 @@ namespace PCG_Dungeon {
 
             return false;
         }
+
+        public override string ToString() {
+            StringBuilder retString = new StringBuilder();
+
+            for ( int row = 0; row < DUNGEON_HEIGHT; row++ ) {
+                for ( int col = 0; col < DUNGEON_WIDTH; col++ ) {
+                    retString.Append( board[col, row].ToString() );
+                }
+
+                retString.Append( Environment.NewLine );
+            }
+
+            return retString.ToString();
+        }
     }
 }
