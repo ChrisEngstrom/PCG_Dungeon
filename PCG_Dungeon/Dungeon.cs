@@ -351,7 +351,7 @@ namespace PCG_Dungeon {
             }
 
             // Save the list of rooms
-            using ( System.IO.StreamWriter file = new System.IO.StreamWriter( @"..\..\saved_dungeonRooms.txt" ) ) {
+            using ( System.IO.StreamWriter file = new System.IO.StreamWriter( @"..\..\saved_dungeonAreas.txt" ) ) {
                 foreach ( Area area in areaList ) {
                     file.Write( area.x1 + "," + area.y1 + "," + area.w + "," + area.h );
                     file.WriteLine();
@@ -381,27 +381,35 @@ namespace PCG_Dungeon {
                 MAX_ROOM_COVERAGE = short.Parse( values[4] );
             }
 
-            // Load the Dungeon board
+            // Load the Player position
+            /// \todo This is a temporary solution until I decide how I want to save out the Player position
             using ( System.IO.StreamReader file = new System.IO.StreamReader( @"..\..\saved_dungeonBoard.txt" ) ) {
+                TileState tempTileState = TileState.EMPTY;
                 char[] buffer = new char[1];
 
                 for ( int row = 0; row < DUNGEON_HEIGHT; row++ ) {
                     for ( int col = 0; col < DUNGEON_WIDTH; col++ ) {
                         file.Read( buffer, 0, 1 );
-                        board[col, row].TileState = (TileState)Enum.Parse( typeof( TileState ), buffer[0].ToString() );
+                        tempTileState = (TileState)Enum.Parse( typeof( TileState ), buffer[0].ToString() );
 
-                        if ( board[col, row].TileState == TileState.PLAYER ) {
+                        if ( tempTileState == TileState.PLAYER ) {
                             player.Position.x = (short)col;
                             player.Position.y = (short)row;
+
+                            break;
                         }
+                    }
+
+                    if ( tempTileState == TileState.PLAYER ) {
+                        break;
                     }
 
                     file.ReadLine();
                 }
             }
 
-            // Load the Dungeon roomList
-            using ( System.IO.StreamReader file = new System.IO.StreamReader( @"..\..\saved_dungeonRooms.txt" ) ) {
+            // Load the Dungeon areaList
+            using ( System.IO.StreamReader file = new System.IO.StreamReader( @"..\..\saved_dungeonAreas.txt" ) ) {
                 string line;
                 string [] values;
                 int lineNum = 0;
@@ -425,6 +433,8 @@ namespace PCG_Dungeon {
                     lineNum++;
                 }
             }
+
+            updateBoard();
         }
 
         /// <summary>
