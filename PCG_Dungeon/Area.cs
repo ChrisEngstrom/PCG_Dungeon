@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 /// \file Area.cs
 namespace PCG_Dungeon {
+    [Serializable()]
     class Area {
         // Grid coordinates for the corners of the area
         public short x1, y1,

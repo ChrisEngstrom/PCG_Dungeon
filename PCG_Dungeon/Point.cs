@@ -5,6 +5,7 @@ using System.Text;
 
 /// \file Point.cs
 namespace PCG_Dungeon {
+    [Serializable()]
     class Point {
         public short x { get; set; }
         public short y { get; set; }

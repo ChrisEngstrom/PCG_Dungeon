@@ -9,6 +9,7 @@ namespace PCG_Dungeon {
     ///     The Dungeon class represents the whole playable grid that includes
     ///         all of the Room%s and Hallway%s as well as the Player.
     /// </summary>
+    [Serializable()]
     class Dungeon {
         Random rand;
         Player player;
@@ -331,110 +332,22 @@ namespace PCG_Dungeon {
         }
 
         /// <summary>
-        ///     Saves the current Dungeon state out to a set of text files.
+        ///     Saves the current Dungeon state
         /// </summary>
         public void SaveToFile() {
-            // Save the board settings
-            using ( System.IO.StreamWriter file = new System.IO.StreamWriter( @"..\..\saved_dungeonSettings.txt" ) ) {
-                file.Write( DUNGEON_WIDTH + "," +
-                            DUNGEON_HEIGHT + "," +
-                            MIN_ROOM_SIZE + "," +
-                            MAX_ROOM_SIZE + "," +
-                            MAX_ROOM_COVERAGE );
+            BinarySerializerHelper<Dungeon> helper = new BinarySerializerHelper<Dungeon>();
 
-                file.WriteLine();
-            }
-
-            // Save the board itself
-            using ( System.IO.StreamWriter file = new System.IO.StreamWriter( @"..\..\saved_dungeonBoard.txt" ) ) {
-                file.Write( this.ToString() );
-            }
-
-            // Save the list of rooms
-            using ( System.IO.StreamWriter file = new System.IO.StreamWriter( @"..\..\saved_dungeonAreas.txt" ) ) {
-                foreach ( Area area in areaList ) {
-                    file.Write( area.x1 + "," + area.y1 + "," + area.w + "," + area.h );
-                    file.WriteLine();
-                }
-            }
+            helper.Save( @"..\..\DungeonState.dat", this );
         }
 
         /// <summary>
-        ///     Loads a Dungeon state from a set of text files.
+        ///     Loads a Dungeon state
         /// </summary>
-        public void LoadFromFile() {
-            /// \todo Add a check to make sure a set of save files exist
+        public Dungeon LoadFromFile() {
+            /// \todo Add a check to make sure a save file exists
+            BinarySerializerHelper<Dungeon> helper = new BinarySerializerHelper<Dungeon>();
 
-            // Wipe the current state of the board
-            initializeBoard();
-            areaList.Clear();
-
-            // Load the Dungeon's settings
-            using ( System.IO.StreamReader file = new System.IO.StreamReader( @"..\..\saved_dungeonSettings.txt" ) ) {
-                string line = file.ReadLine();
-                string [] values = line.Split( ',' );
-
-                DUNGEON_WIDTH = short.Parse( values[0] );
-                DUNGEON_HEIGHT = short.Parse( values[1] );
-                MIN_ROOM_SIZE = short.Parse( values[2] );
-                MAX_ROOM_SIZE = short.Parse( values[3] );
-                MAX_ROOM_COVERAGE = short.Parse( values[4] );
-            }
-
-            // Load the Player position
-            /// \todo This is a temporary solution until I decide how I want to save out the Player position
-            using ( System.IO.StreamReader file = new System.IO.StreamReader( @"..\..\saved_dungeonBoard.txt" ) ) {
-                TileState tempTileState = TileState.EMPTY;
-                char[] buffer = new char[1];
-
-                for ( int row = 0; row < DUNGEON_HEIGHT; row++ ) {
-                    for ( int col = 0; col < DUNGEON_WIDTH; col++ ) {
-                        file.Read( buffer, 0, 1 );
-                        tempTileState = (TileState)Enum.Parse( typeof( TileState ), buffer[0].ToString() );
-
-                        if ( tempTileState == TileState.PLAYER ) {
-                            player.Position.x = (short)col;
-                            player.Position.y = (short)row;
-
-                            break;
-                        }
-                    }
-
-                    if ( tempTileState == TileState.PLAYER ) {
-                        break;
-                    }
-
-                    file.ReadLine();
-                }
-            }
-
-            // Load the Dungeon areaList
-            using ( System.IO.StreamReader file = new System.IO.StreamReader( @"..\..\saved_dungeonAreas.txt" ) ) {
-                string line;
-                string [] values;
-                int lineNum = 0;
-
-                while ( !file.EndOfStream ) {
-                    line = file.ReadLine();
-                    values = line.Split( ',' );
-
-                    if ( lineNum % 3 == 0 ) {
-                        areaList.Add( new Room( short.Parse( values[0] ),
-                                                short.Parse( values[1] ),
-                                                short.Parse( values[2] ),
-                                                short.Parse( values[3] ) ) );
-                    } else {
-                        areaList.Add( new Hallway( short.Parse( values[0] ),
-                                                   short.Parse( values[1] ),
-                                                   short.Parse( values[2] ),
-                                                   short.Parse( values[3] ) ) );
-                    }
-
-                    lineNum++;
-                }
-            }
-
-            updateBoard();
+            return helper.Read( @"..\..\DungeonState.dat" );
         }
 
         /// <summary>

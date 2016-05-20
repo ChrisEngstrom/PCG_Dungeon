@@ -306,6 +306,4 @@ $RECYCLE.BIN/
 *.lnk
 
 # Project specific ignored files
-PCG_Dungeon/saved_dungeonBoard.txt
-PCG_Dungeon/saved_dungeonSettings.txt
-PCG_Dungeon/saved_dungeonAreas.txt
+PCG_Dungeon/DungeonState.dat

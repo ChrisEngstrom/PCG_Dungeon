@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 /// \file Player.cs
 namespace PCG_Dungeon {
+    [Serializable()]
     class Player {
         public Point Position { get; set; }
 

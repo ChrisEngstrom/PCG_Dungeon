@@ -11,6 +11,7 @@ namespace PCG_Dungeon {
     ///         that is used in conjunction with a VerticalHallway to connect
     ///         two Room%s.
     /// </summary>
+    [Serializable()]
     class HorizontalHallway : Hallway {
         /// <summary>
         ///     The HorizontalHallway constructor creates a Hallway with a

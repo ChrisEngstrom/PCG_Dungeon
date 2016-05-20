@@ -1,15 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
 using System.Windows.Shapes;
 
 /// \file MainWindow.xaml.cs
@@ -127,8 +119,8 @@ namespace PCG_Dungeon {
         private void btnLoadDungeonFromFile_Click( object sender, RoutedEventArgs e ) {
             canvDungeon.Children.Clear();
 
-            dungeon.LoadFromFile();
-            
+            dungeon = dungeon.LoadFromFile();
+
             // Update the settings fields with the settings from the loaded dungeon state
             iudMaxRoomCoverage.Value = dungeon.MaxRoomCoverage;
             tbMinRoomSize.Text = dungeon.MinRoomSize.ToString();

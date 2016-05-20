@@ -5,6 +5,7 @@ using System.Text;
 
 /// \file Room.cs
 namespace PCG_Dungeon {
+    [Serializable()]
     class Room : Area {
         public short Area { get; private set; }
 

@@ -19,6 +19,7 @@ namespace PCG_Dungeon {
     /// <summary>
     ///     The Tile class represents a location on the Dungeon board
     /// </summary>
+    [Serializable()]
     class Tile {
         public TileState TileState { get; set; }
 

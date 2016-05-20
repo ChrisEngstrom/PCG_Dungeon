@@ -81,6 +81,7 @@
       <SubType>Designer</SubType>
     </ApplicationDefinition>
     <Compile Include="Area.cs" />
+    <Compile Include="BinarySerializerHelper.cs" />
     <Compile Include="Dungeon.cs" />
     <Compile Include="Hallway.cs" />
     <Compile Include="HorizontalHallway.cs" />
